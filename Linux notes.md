@@ -329,8 +329,30 @@
 1. vim编辑器默认Tab键为8空格，使用`vi /etc/vim/vimrc`在配置文件最后加上 `set ts=4`即可
 2. vim编辑器默认不显示行号，使用`vi /etc/vim/vimrc`在配置文件最后加上 `set nu`即可
 
+## 7、 Makefile
 
+​	例：有主函数 `main` 以及实现输入的函数 `input` 、实现加法的函数 `calcu` 的情境下，需要使用命令：
 
+​	`gcc -o main main.o calcu.o input.o`  进行链接生成可执行文件 `main` ，此时若修改 `input.c` 后想要重新编译需要编译所有文件，使用 `Makefile` 可以只编译修改过的文件，语法如下：
 
+- ```
+  main: main.o input.o calcu.o 
+  	gcc-o main main.o input.o calcu.o
+  main.o: main.c
+  	gcc-c main.c
+  input.o: input.c
+  	gcc -c input.c
+  calcu.o: calcu.c
+  	gcc-c calcu.c
+  	
+  clean:
+  	rm *.o
+  	rm main
+  ```
 
-   ## ![image-20240516223637838](F:\IMX6ULL\assets\image-20240516223637838.png)
+  使用命令 `make` 会自动查找当前目录下的 `Makefile` 并按需编译生成 `main` 可执行文件，使用命令 `clean` 会执行 
+
+  	rm *.o
+  	rm main
+
+​	
