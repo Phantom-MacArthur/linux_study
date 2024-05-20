@@ -301,7 +301,7 @@
 
 ### 6.1 vim的三种工作模式：
 
-1.  一般模式(指令模式)：默认模式，用vi打开一个软件以后自动进入到此模式。
+1. 一般模式(指令模式)：默认模式，用vi打开一个软件以后自动进入到此模式。
 
 2. 编辑模式：一般模式中无法编辑文件，要编辑文件就要进入编辑模式，按下“i、I、a、A、o、O、s、r”等就会进入到编辑模式。一般按下“a”进入编辑模式。按下ESC键可退出编辑模式。
 
@@ -329,15 +329,15 @@
 1. vim编辑器默认Tab键为8空格，使用`vi /etc/vim/vimrc`在配置文件最后加上 `set ts=4`即可
 2. vim编辑器默认不显示行号，使用`vi /etc/vim/vimrc`在配置文件最后加上 `set nu`即可
 
-## 7、 Makefile
+## 7、 Makefile 介绍及使用
 
-​	例：有主函数 `main` 以及实现输入的函数 `input` 、实现加法的函数 `calcu` 的情境下，需要使用命令：
+### 7.1 基本语法
 
-​	`gcc -o main main.o calcu.o input.o`  进行链接生成可执行文件 `main` ，此时若修改 `input.c` 后想要重新编译需要编译所有文件，使用 `Makefile` 可以只编译修改过的文件，语法如下：
+- 在有主函数 `main` 以及实现输入的函数 `input` 、实现加法的函数 `calcu` 的情境下，需要使用命令：`gcc -o main main.o calcu.o input.o`  进行链接生成可执行文件 `main` ，此时若修改`input.c` 后想要重新编译需要编译所有文件，使用 `Makefile` 可以只编译修改过的文件，语法如下：
 
-- ```
+  ```
   main: main.o input.o calcu.o 
-  	gcc-o main main.o input.o calcu.o
+  	gcc  -o main main.o input.o calcu.o
   main.o: main.c
   	gcc-c main.c
   input.o: input.c
@@ -352,7 +352,75 @@
 
   使用命令 `make` 会自动查找当前目录下的 `Makefile` 并按需编译生成 `main` 可执行文件，使用命令 `clean` 会执行 
 
+  ```
+  rm *.o
+  rm main
+  ```
+
+### 7.2 常用技巧
+
+- `Makefile` 语法中的变量只有字符串，调用时在变量前加上 `$` 即可，类似于宏替换，例：
+
+  ```
+  # Makefile 变量的使用
+  objects = main.o input.o calcu.o 
+  main: $(objects)
+  	gcc -o main $(objects)
+  ```
+
+- 不同赋值符的用法
+
+  1. 在使用" = "给变量赋值时，会使用最后一次定义的值，例：
+
+     ```
+      name = zzk
+      curname = $(name) 
+      name = zuozongkai
+     
+      print: 
+      @echo curname: $(curname)     # 注: @echo 表示不回显这条命令
+     ```
+
+     最后打印的结果是 `zuozongkai`
+
+  2. 在使用" := "给变量赋值时，不会使用最后一次定义的值，因此打印结果是 `zzk` 
+
+  3. 在使用" ?= "给变量赋值时，若前方有赋值，则使用前值，若前方无赋值，则使用本值
+
+  4. 在使用" +="给变量赋值时，语义同C语言，将右值追加到原有的字符串
+
+
+- 模式规则 : "%.c" 可以匹配所有以.c结尾的文件，此处的 "%" 类似于通配符 "*" 
+
+### 7.3 自动化变量
+
+- | 自动化变量 | 描述                                       |
+  | ---------- | ------------------------------------------ |
+  | $@         | 匹配规则中的所有目标集合                   |
+  | $%         | 匹配规则中的函数库目标集合                 |
+  | $<         | 匹配符合模式的文件几个                     |
+  | $?         | 所有比目标新的依赖目标集合，以空格分开     |
+  | $^         | 所有依赖文件集合去重以后的集合，以空格分开 |
+  | $+         | 所有依赖文件集合(不会去重)，以空格分开     |
+  | $*         | 匹配%及其之前的部分                        |
+
+  修改后：
+
+  ```
+  objects = main.o input.o calcu.o 
+  main: $(objects) 
+  	gcc -o main $(objects) 
+  	
+  %.o : %.c 
+  	gcc -c $< 
+  
+  clean: 
   	rm *.o
   	rm main
+  ```
 
-​	
+- 伪目标：使用命令  `.PHONY:clean` 声明 `clean` 为伪目标后，无论目录下是否存在名为 `clean` 的文件，输入 ` make clean` 都会执行 `clean` 规则后的 `rm` 命令，用于防止将clean视为依赖文件而错误地执行命令
+
+### 7.4 条件判断
+
+- 关键字：`ifeq ` `ifneq` `ifdef` `ifndef` `else` `
